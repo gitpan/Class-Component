@@ -49,11 +49,11 @@ sub MODIFY_CODE_ATTRIBUTES {
 }
 
 1;
-
+__END__
 
 =head1 NAME
 
-Class::Component - plugin base for pluggable component framework
+Class::Component::Plugin - plugin base for pluggable component framework
 
 =head1 SYNOPSIS
 

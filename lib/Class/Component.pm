@@ -2,7 +2,7 @@ package Class::Component;
 
 use strict;
 use warnings;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 for my $method (qw/ load_components load_plugins new register_method register_hook remove_method remove_hook call run_hook NEXT /) {
     no strict 'refs';
@@ -473,6 +473,10 @@ Kazuhiro Osawa E<lt>ko@yappo.ne.jpE<gt>
 =head1 SEE ALSO
 
 L<Class::Component::Plugin>
+
+=head1 EXAMPLE
+
+L<Number::Object>
 
 =head1 LICENSE
 

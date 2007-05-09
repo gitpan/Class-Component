@@ -5,6 +5,7 @@ use warnings;
 
 use Carp::Clan qw/Class::Component/;
 use Class::Inspector;
+use Scalar::Util ();
 
 
 sub register_method {
@@ -19,8 +20,8 @@ sub register_method {
 
     my $singleton_class;
     my $pkg = ref($self);
-    my $ref_addr = $self+0;
-    unless ($pkg =~ /::_Singletons::$ref_addr$/) {
+    my $ref_addr = Scalar::Util::refaddr($self);
+    unless ($pkg =~ /::_Singletons::\d+$/) {
         $singleton_class = "$pkg\::_Singletons::$ref_addr";
         bless $self, $singleton_class;
         no strict 'refs';
