@@ -2,7 +2,7 @@ package Class::Component;
 
 use strict;
 use warnings;
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 for my $method (qw/ load_components load_plugins new register_method register_hook remove_method remove_hook call run_hook NEXT /) {
     no strict 'refs';
@@ -209,10 +209,10 @@ sub remove_hook {
 }
 
 sub call {
-    my($class, $c, $method, $args) = @_;
+    my($class, $c, $method, @args) = @_;
     return unless my $plugin = $c->class_component_methods->{$method};
     $class->reload_plugin($c, $plugin);
-    $plugin->$method($c, $args);
+    $plugin->$method($c, @args);
 }
 
 sub run_hook {
@@ -402,7 +402,8 @@ Hook attribute is usually used and set. See Also L<Class::Component::Plugin>.
 
 =item call
 
-  $obj->call('plugin method name' => $args)
+  $obj->call('plugin method name' => @args)
+  $obj->call('plugin method name' => %args)
 
 =item run_hook
 

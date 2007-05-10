@@ -15,8 +15,8 @@ sub hello_hook :Hook('hello') {
 }
 
 sub hello2 :Method {
-    my($self, $c, $args) = @_;
-    $args->[0]
+    my($self, $c, $str) = @_;
+    $str
 }
 
 sub hello_hook2 :Hook('hello2') {

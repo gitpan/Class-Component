@@ -1,5 +1,9 @@
 Revision history for Perl extension Class::Component
 
+0.03    2007-05-10T15:14:42+09:00
+        - change reference args to array args to call methods
+          > $obj->call('plugin method name' => $args) to $obj->call('plugin method name' => @args)
+
 0.02    2007-05-10T06:01:53+09:00
         - fixed to dupe pod namespace Class::Component
         - using Scalar::Util::refaddr to get reference address by Component::SingletonMethod

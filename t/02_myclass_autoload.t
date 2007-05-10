@@ -26,6 +26,6 @@ is $obj[1]->call('hello'), 'hello';
 is $obj[1]->hello, 'hello';
 is $obj[1]->run_hook('hello')->[0], 'hook hello';
 
-is $obj[1]->call('hello2', [ 'data' ]), 'data';
-is $obj[1]->hello2([ 'data' ]), 'data';
+is $obj[1]->call('hello2', 'data'), 'data';
+is $obj[1]->hello2('data'), 'data';
 is $obj[1]->run_hook('hello2', { value => 'data' })->[0], 'data';
