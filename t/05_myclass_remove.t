@@ -7,7 +7,7 @@ use lib 't';
 use Test::More qw(no_plan);
 
 use MyClass;
-MyClass->load_components(qw/ Autocall /);
+MyClass->load_components(qw/ Autocall::Autoload /);
 
 my @obj = ();
 $obj[0] = MyClass->new;

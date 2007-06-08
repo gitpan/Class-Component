@@ -2,7 +2,7 @@ package Class::Component;
 
 use strict;
 use warnings;
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 for my $method (qw/ load_components load_plugins new register_method register_hook remove_method remove_hook call run_hook NEXT /) {
     no strict 'refs';
@@ -28,8 +28,8 @@ sub import {
     Class::Component::Implement->init($pkg, %args);
 }
 
-sub load_component_resolver {}
-sub load_plugin_resolver {}
+sub class_component_load_component_resolver {}
+sub class_component_load_plugin_resolver {}
 
 sub class_component_reinitialize {
     my($class, %args) = @_;
@@ -43,8 +43,10 @@ use strict;
 use warnings;
 use base qw( Class::Data::Inheritable );
 
+my $component_isa_list = {};
 my $default_components = {};
 my $default_plugins    = {};
+my $default_configs    = {};
 my $reload_plugin_maps = {};
 
 use UNIVERSAL::require;
@@ -52,12 +54,18 @@ use UNIVERSAL::require;
 use Carp::Clan qw/Class::Component/;
 use Class::Inspector;
 
+sub component_isa_list { $component_isa_list }
+sub default_components { $default_components }
+sub default_plugins { $default_plugins }
+sub default_configs { $default_configs }
+
 sub init {
     my($class, $c, %args) = @_;
-    $c = ref($c) || $c;
+    $c = $class->_class($c);
 
     $default_components->{$c} ||= [];
     $default_plugins->{$c}    ||= [];
+    $default_configs->{$c}    = delete $args{config} if defined $args{config};
 
     delete $reload_plugin_maps->{$c};
     $reload_plugin_maps->{$c} = \&_reload_plugin if $args{reload_plugin};
@@ -81,22 +89,24 @@ sub load_components {
 
 sub _load_component {
     my($class, $c, $component, $reload) = @_;
-    $c = ref $c || $c;
+    $c = $class->_class($c);
 
     my $pkg;
-    if (($pkg = $component) =~ s/^\+// || ($pkg = $c->load_component_resolver($component))) {
+    if (($pkg = $component) =~ s/^\+// || ($pkg = $c->class_component_load_component_resolver($component))) {
         if (Class::Inspector->installed($pkg)) {
             $pkg->require or croak $@;
         } else {
             croak "$pkg is not installed";
         }
     } else {
-        for my $comp ("$c\::Component::$component", "Class::Component::Component::$component") {
+        for my $isa_pkg (@{ $class->isa_list_cache($c) }) {
+            my $comp = "$isa_pkg\::Component::$component";
             next unless Class::Inspector->installed($comp);
             $comp->require or croak $@;
             $pkg = $comp;
+            last;
         }
-        croak "$pkg is not installed" unless $pkg;
+        croak "$component is not installed" unless $pkg;
     }
 
     unless ($reload) {
@@ -107,7 +117,17 @@ sub _load_component {
 
     no strict 'refs';
     unshift @{"$c\::ISA"}, $pkg;
+    for my $isa_pkg (@{ $class->isa_list($c) }) {
+        my $key = $c;
+        my $from;
+        unless ($c eq $isa_pkg) {
+            $key .= "-$isa_pkg";
+            $from = $isa_pkg;
+        }
+        $class->component_isa_list->{$key} = $class->isa_list($c, $from);
+    }
     push @{ $default_components->{$c} }, $pkg unless $reload;
+    $pkg->class_component_load_component_init($c) if $pkg->can('class_component_load_component_init');
 }
 
 sub load_plugins {
@@ -136,11 +156,17 @@ sub _load_plugin {
     my($class, $c, $plugin) = @_;
 
     my $pkg;
-    if (($pkg = $plugin) =~ s/^\+// || ($pkg = $c->load_plugin_resolver($plugin))) {
+    if (($pkg = $plugin) =~ s/^\+// || ($pkg = $c->class_component_load_plugin_resolver($plugin))) {
         $pkg->require or croak $@;
     } else {
-        $pkg = ref($c) . "::Plugin::$plugin";
-        $pkg->require or croak $@;
+        for my $isa_pkg (@{ $class->isa_list_cache($class->_class($c)) }) {
+            my $comp = "$isa_pkg\::Plugin::$plugin";
+            next unless Class::Inspector->installed($comp);
+            $comp->require or croak $@;
+            $pkg = $comp;
+            last;
+        }
+        croak "$plugin is not installed" unless $pkg;
     }
 
     my $class_component_plugins = $c->class_component_plugins;
@@ -163,7 +189,7 @@ sub new {
         _class_component_components      => $default_components->{$c},
         _class_component_methods         => {},
         _class_component_hooks           => {},
-        _class_component_config          => $args->{config} || {},
+        _class_component_config          => $args->{config} || $default_configs->{$c} || {},
         _class_component_default_plugins => $default_plugins->{$c},
     }, $c;
 
@@ -231,32 +257,54 @@ sub run_hook {
 
 sub _reload_plugin {
     my($class, $c, $pkg) = @_;
-    return if Class::Inspector->loaded(ref($pkg) || $pkg);
+    return if Class::Inspector->loaded($class->_class($pkg));
 
-    $default_components->{ref $c} = $c->class_component_components;
-    $default_plugins->{ref $c}    = $c->class_component_plugins;
+    $default_components->{$class->_class($c)} = $c->class_component_components;
+    $default_plugins->{$class->_class($c)}    = $c->class_component_plugins;
 
-    for my $component (@{ $default_components->{ref $c} }) {
-        $class->_load_component($c, '+' . (ref($component) || $component), 1);
+    for my $component (@{ $default_components->{$class->_class($c)} }) {
+        $class->_load_component($c, '+' . $class->_class($component), 1);
     }
 
     for my $plugin (@{ $c->class_component_plugins }) {
-        $class->_load_plugin($c, '+' . (ref($plugin) || $plugin));
+        $class->_load_plugin($c, '+' . $class->_class($plugin));
     }
 
 }
 
 sub reload_plugin {
     my($class, $c) = @_;
-    return unless my $code = $reload_plugin_maps->{ref $c};
+    return unless my $code = $reload_plugin_maps->{$class->_class($c)};
     goto $code;
 }
 
-
 sub NEXT {
-    my($class, $prot, $method, @args) = @_;
-    my $c = ref($prot) || $prot;
-    my $from = caller(1);
+    my($class, $c, $method, @args) = @_;
+    my @isa = @{ $class->isa_list_cache($c, caller(1)) };
+
+    for my $pkg (@isa) {
+        my $next = "$pkg\::$method";
+        return $c->$next(@args) if $pkg->can($method);
+    }
+
+    for my $pkg (@isa) {
+        my $next = "$pkg\::$method";
+        return $c->$next(@args) if $pkg->can('AUTOLOAD');
+    }
+}
+
+sub isa_list_cache {
+    my($class, $c, $from) = @_;
+    $c = $class->_class($c);
+    my $key = $c;
+    $key .= "-$from" if $from;
+    $component_isa_list->{$key} = $class->isa_list($c, $from) unless $component_isa_list->{$key};
+    $component_isa_list->{$key};
+}
+
+sub isa_list {
+    my($class, $c, $from) = @_;
+    $c = $class->_class($c);
 
     my $isa_list = $class->_fetch_isa_list($c);
     my $isa_mark = {};
@@ -265,6 +313,7 @@ sub NEXT {
 
     my @next_classes;
     my $f = 0;
+    $f = 1 unless $from;
     for my $pkg (@isa) {
         if ($f) {
             push @next_classes, $pkg;
@@ -273,16 +322,7 @@ sub NEXT {
             $f = 1;
         }
     }
-
-    for my $pkg (@next_classes) {
-        my $next = "$pkg\::$method";
-        return $prot->$next(@args) if $pkg->can($method);
-    }
-
-    for my $pkg (@next_classes) {
-        my $next = "$pkg\::$method";
-        return $prot->$next(@args) if $pkg->can('AUTOLOAD');
-    }
+    \@next_classes;
 }
 
 sub _fetch_isa_list {
@@ -324,6 +364,11 @@ sub _sort_isa_list {
     @isa;
 }
 
+sub _class {
+    my($class, $c) = @_;
+    ref($c) || $c;
+}
+
 package Class::Component;
 
 1;
@@ -341,7 +386,7 @@ base class
   use strict;
   use warnings;
   use Class::Component;
-  __PACKAGE__->load_component(qw/ Autocall /);
+  __PACKAGE__->load_component(qw/ Autocall::InjectMethod /);
   __PACKAGE__->load_plugins(qw/ Default /);
 
 application code
@@ -350,7 +395,7 @@ application code
   use warnings;
   use MyClass;
   my $obj = MyClass->new({ load_plugins => [qw/ Hello /] });
-  $obj->hello;
+  $obj->hello; # autocall
   $obj->run_hook( hello => $args );
 
 =head1 DESCRIPTION
@@ -371,6 +416,7 @@ constructor
   __PACKAGE__->load_components(qw/ Sample /);
 
 The candidate is the order of MyClass::Component::Sample and Class::Component::Sample. 
+It looks for the module in order succeeded to by @ISA. 
 It is used to remove + when there is + in the head. 
 
 =item load_plugins
@@ -378,6 +424,7 @@ It is used to remove + when there is + in the head.
   __PACKAGE__->load_plugins(qw/ Default /);
 
 The candidate is the MyClass::Plugin::Default.
+It looks for the module in order succeeded to by @ISA. 
 It is used to remove + when there is + in the head. 
 
 =item register_method
@@ -445,9 +492,9 @@ It is behavior near maybe::next::method of Class::C3.
 
 =over 4
 
-=item load_component_resolver
+=item class_component_load_component_resolver
 
-=item load_plugin_resolver
+=item class_component_load_plugin_resolver
 
 =back
 
@@ -464,6 +511,66 @@ or
   MyClass->class_component_reinitialize( reload_plugin => 1 );
 
 Plugin/Component of the object made with YAML::Load etc. is done and require is done automatically. 
+
+=back
+
+=head1 APPENDED COMPONENTS
+
+It is an outline of Components that the bundle is done in Class::Components::Components or less. 
+
+=over 4
+
+=item DisableDynamicPlugin
+
+plugin can be added, lost from new and the object method, and some speeds are improved.
+
+  package MyClass;
+  use base 'Class::Component';
+  __PACKAGE__->load_components(qw/ DisableDynamicPlugin /);
+  package main;
+  MyClass->load_plugins(qw/ Test /); # is ok!
+  my $obj = MyClass->new;
+  $obj->load_plugins(qw/ NoNoNo /); # not loaded
+  my $obj2 = MyClass->new({ load_plugins => qw/ OOPS / }); # not loaded
+
+=item Autocall::Autoload
+
+It keeps accessible with method defined by register_method.
+using AUTOLOAD.
+
+  package MyClass::Plugin::Test;
+  use base 'Class::Component::Plugin';
+  sub test :Method { print "plugin load ok" }
+  package MyClass;
+  use base 'Class::Component';
+  __PACKAGE__->load_components(qw/ Autocall::Autoload /);
+  package main;
+  MyClass->load_plugins(qw/ Test /);
+  my $obj = MyClass->new;
+  $obj->test; # plugin load ok
+
+=item Autocall::InjectMethod
+
+It is the same as Autocall::Autoload. The method is actually added.
+
+=item Autocall::SingletonMethod
+
+The method is added in the form of singleton method.
+It is not influenced by other objects.
+It is not possible to use it at the same time as DisableDynamicPlugin.
+
+  package MyClass::Plugin::Test;
+  use base 'Class::Component::Plugin';
+  sub test :Method { print "plugin load ok" }
+  package MyClass;
+  use base 'Class::Component';
+  __PACKAGE__->load_components(qw/ Autocall::Autoload /);
+  package main;
+  MyClass->;
+  my $obj = MyClass->new({ load_plugins => [qw/ Test /] });
+  $obj->test; # plugin load ok
+  my $obj2 = MyClass->new;
+  $obj2->test; # died
 
 =back
 

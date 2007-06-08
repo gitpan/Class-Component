@@ -1,5 +1,16 @@
 Revision history for Perl extension Class::Component
 
+0.04    2007-06-08T19:29:44+09:00
+        - add components DisableDynamicPlugin, Autocall::InjectMethod
+        - change component name, Autocall -> Autocall::Autoload, SingletonMethod -> Autocall::SingletonMethod
+        - change interface name load_component_resolver -> class_component_load_component_resolver
+        - change interface name load_plugin_resolver -> class_component_load_plugin_resolver
+        - change resolve package rule to locad_components and load_plugins
+        - add config loader in import method
+
+        - Class::Component caching isa lists
+        - Class::Component::Plugin caching attr methods
+
 0.03    2007-05-10T15:14:42+09:00
         - change reference args to array args to call methods
           > $obj->call('plugin method name' => $args) to $obj->call('plugin method name' => @args)

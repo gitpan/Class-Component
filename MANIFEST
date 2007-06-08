@@ -14,6 +14,10 @@ lib/Class/Component/Attribute.pm
 lib/Class/Component/Attribute/Hook.pm
 lib/Class/Component/Attribute/Method.pm
 lib/Class/Component/Component/Autocall.pm
+lib/Class/Component/Component/Autocall/Autoload.pm
+lib/Class/Component/Component/Autocall/InjectMethod.pm
+lib/Class/Component/Component/Autocall/SingletonMethod.pm
+lib/Class/Component/Component/DisableDynamicPlugin.pm
 lib/Class/Component/Component/SingletonMethod.pm
 lib/Class/Component/Plugin.pm
 Makefile.PL
@@ -30,6 +34,10 @@ t/04_myclass_autoload_dump.t
 t/05_myclass_remove.t
 t/06_myclass_singletonmethod.t
 t/07_myclass_next.t
+t/08_myclass_disabledynamicplugin.t
+t/09_myclass_disabledynamicplugin_autoload.t
+t/10_myclass_injectmethod.t
+t/11_myclass_disabledynamicplugin_injectmethod.t
 t/MyClass.pm
 t/MyClass/C.pm
 t/MyClass/Component.pm

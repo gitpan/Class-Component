@@ -6,6 +6,7 @@ use base qw( Class::Accessor::Fast Class::Data::Inheritable );
 
 __PACKAGE__->mk_accessors(qw/ config /);
 __PACKAGE__->mk_classdata( '__attr_cache' => {} );
+__PACKAGE__->mk_classdata( '__methods_cache' );
 
 use Carp::Clan qw/Class::Component/;
 use Class::Inspector;
@@ -24,11 +25,17 @@ sub init {}
 sub register {
     my($self, $c) = @_;
 
-    for my $method (@{ Class::Inspector->methods(ref $self) || [] }) {
-        next unless my $code = $self->can($method);
-        next unless my $attrs = $self->__attr_cache->{$code};
-
-        for my $attr (@{ $attrs }) {
+    unless ($self->__methods_cache) {
+        my @methods;
+        for my $method (@{ Class::Inspector->methods(ref $self) || [] }) {
+            next unless my $code = $self->can($method);
+            next unless my $attrs = $self->__attr_cache->{$code};
+            push @methods, { method => $method, code => $code, attrs => $attrs };
+        }
+        $self->__methods_cache( \@methods );
+    }
+    for my $data (@{ $self->__methods_cache }) {
+        for my $attr (@{ $data->{attrs} }) {
             next unless my($key, $value) = ($attr =~ /^(.*?)(?:\(\s*(.+?)\s*\))?$/);
             if (defined $value) {
                 ($value =~ s/^'(.*)'$/$1/) || ($value =~ s/^"(.*)"$/$1/);
@@ -37,7 +44,7 @@ sub register {
             my $attr_class = "Class::Component::Attribute::$key";
             next unless Class::Inspector->installed($attr_class);
             $attr_class->require or croak "'$key' is not supported attribute";
-            $attr_class->register($self, $c, $method, $value, $code);
+            $attr_class->register($self, $c, $data->{method}, $value, $data->{code});
         }
     }
 }
