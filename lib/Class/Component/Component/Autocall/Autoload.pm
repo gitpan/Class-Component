@@ -8,7 +8,7 @@ use Carp::Clan qw/Class::Component/;
 our $AUTOLOAD;
 sub AUTOLOAD {
     my $self = shift;
-    return unless $self;
+    return unless ref($self);
     (my $method = $AUTOLOAD) =~ s/.*:://;
     return if $method eq 'DESTROY';
 

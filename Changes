@@ -1,5 +1,8 @@
 Revision history for Perl extension Class::Component
 
+0.05    2007-06-11T22:16:42+09:00
+        - fixed to bug where AUTOLOAD doesn't move normally when object is overload
+
 0.04    2007-06-08T19:29:44+09:00
         - add components DisableDynamicPlugin, Autocall::InjectMethod
         - change component name, Autocall -> Autocall::Autoload, SingletonMethod -> Autocall::SingletonMethod
