@@ -2,7 +2,7 @@ package Class::Component;
 
 use strict;
 use warnings;
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 for my $method (qw/ load_components load_plugins new register_method register_hook remove_method remove_hook call run_hook NEXT /) {
     no strict 'refs';
@@ -513,6 +513,11 @@ or
 Plugin/Component of the object made with YAML::Load etc. is done and require is done automatically. 
 
 =back
+
+=head1 ATTRIBUTES
+
+SEE ALSO Class::Component::Attribute::Method, Class::Component::Attribute::Hook 
+and MyClass::Attribute::Test in ./t directory.
 
 =head1 APPENDED COMPONENTS
 

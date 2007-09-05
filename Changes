@@ -1,5 +1,8 @@
 Revision history for Perl extension Class::Component
 
+0.06    2007-09-05T21:36:57+09:00
+        - Attribute was able to be enhanced in the name space of the user class. 
+
 0.05    2007-06-11T22:16:42+09:00
         - fixed to bug where AUTOLOAD doesn't move normally when object is overload
 

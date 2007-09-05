@@ -38,7 +38,9 @@ t/08_myclass_disabledynamicplugin.t
 t/09_myclass_disabledynamicplugin_autoload.t
 t/10_myclass_injectmethod.t
 t/11_myclass_disabledynamicplugin_injectmethod.t
+t/12_attribute.t
 t/MyClass.pm
+t/MyClass/Attribute/Test.pm
 t/MyClass/C.pm
 t/MyClass/Component.pm
 t/MyClass/Component/A.pm
@@ -46,5 +48,6 @@ t/MyClass/Component/B.pm
 t/MyClass/Component/E.pm
 t/MyClass/D.pm
 t/MyClass/F.pm
+t/MyClass/Plugin/Attribute.pm
 t/MyClass/Plugin/Default.pm
 t/MyClass/Plugin/Hello.pm

@@ -41,10 +41,13 @@ sub register {
                 ($value =~ s/^'(.*)'$/$1/) || ($value =~ s/^"(.*)"$/$1/);
             }
 
-            my $attr_class = "Class::Component::Attribute::$key";
-            next unless Class::Inspector->installed($attr_class);
-            $attr_class->require or croak "'$key' is not supported attribute";
-            $attr_class->register($self, $c, $data->{method}, $value, $data->{code});
+
+            for my $isa_pkg (@{ Class::Component::Implement->isa_list_cache($c) }) {
+                my $attr_class = "$isa_pkg\::Attribute::$key";
+                next unless Class::Inspector->installed($attr_class);
+                $attr_class->require or croak "'$key' is not supported attribute";
+                $attr_class->register($self, $c, $data->{method}, $value, $data->{code});
+            }
         }
     }
 }
