@@ -10,6 +10,18 @@ requires $_ for (qw/
     UNIVERSAL::require
 /);
 
+features(
+    'Plaggerize' => [
+        -default => 0,
+        recommends('Encode'),
+        recommends('YAML'),
+    ],
+    'ANSI Color Logging for Plaggerize' => [
+        -default => 0,
+        recommends('Term::ANSIColor'),
+    ],
+);
+
 build_requires 'Test::More';
 #use_test_base;
 auto_include;

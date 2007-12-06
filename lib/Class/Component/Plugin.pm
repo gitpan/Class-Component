@@ -13,10 +13,10 @@ use Class::Inspector;
 use UNIVERSAL::require;
 
 sub new {
-    my($class, $config) = @_;
+    my($class, $config, $c) = @_;
     my $self = bless {}, $class;
     $self->config($config);
-    $self->init;
+    $self->init($c);
     $self;
 }
 

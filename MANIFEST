@@ -18,6 +18,10 @@ lib/Class/Component/Component/Autocall/Autoload.pm
 lib/Class/Component/Component/Autocall/InjectMethod.pm
 lib/Class/Component/Component/Autocall/SingletonMethod.pm
 lib/Class/Component/Component/DisableDynamicPlugin.pm
+lib/Class/Component/Component/Plaggerize.pm
+lib/Class/Component/Component/Plaggerize/ConfigLoader.pm
+lib/Class/Component/Component/Plaggerize/Log.pm
+lib/Class/Component/Component/Plaggerize/PluginLoader.pm
 lib/Class/Component/Component/SingletonMethod.pm
 lib/Class/Component/Plugin.pm
 Makefile.PL
@@ -36,6 +40,7 @@ t/06_myclass_singletonmethod.t
 t/07_myclass_next.t
 t/08_myclass_disabledynamicplugin.t
 t/09_myclass_disabledynamicplugin_autoload.t
+t/101_plaggerize_simple.t
 t/10_myclass_injectmethod.t
 t/11_myclass_disabledynamicplugin_injectmethod.t
 t/12_attribute.t
@@ -51,3 +56,5 @@ t/MyClass/F.pm
 t/MyClass/Plugin/Attribute.pm
 t/MyClass/Plugin/Default.pm
 t/MyClass/Plugin/Hello.pm
+t/MyPlaggerize.pm
+t/MyPlaggerize/Plugin/Test.pm

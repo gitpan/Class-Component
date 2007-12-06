@@ -1,5 +1,11 @@
 Revision history for Perl extension Class::Component
 
+0.07    2007-12-06T17:03:46+09:00
+        - add Class::Component::Component::Plaggerize
+        - add class_component_clear_isa_list method
+        - plugin config support for load_config method
+        - put context data to Class::Component::Plugin::init
+
 0.06    2007-09-05T21:36:57+09:00
         - Attribute was able to be enhanced in the name space of the user class. 
 

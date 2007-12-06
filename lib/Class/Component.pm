@@ -2,7 +2,7 @@ package Class::Component;
 
 use strict;
 use warnings;
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 for my $method (qw/ load_components load_plugins new register_method register_hook remove_method remove_hook call run_hook NEXT /) {
     no strict 'refs';
@@ -34,6 +34,16 @@ sub class_component_load_plugin_resolver {}
 sub class_component_reinitialize {
     my($class, %args) = @_;
     Class::Component::Implement->init($class, %args);
+}
+
+sub class_component_clear_isa_list {
+    my $class = shift;
+
+    my $klass = $_[0] || ref($class) || $class;
+    my $isa_list = Class::Component::Implement->component_isa_list;
+    for my $key (keys %{ $isa_list }) {
+        delete $isa_list->{$key} if $key =~ /^$klass-/ || $key eq $klass;
+    }
 }
 
 package # hide from PAUSE
@@ -155,6 +165,14 @@ sub load_plugins_default {
 sub _load_plugin {
     my($class, $c, $plugin) = @_;
 
+    # config option support
+    my $config;
+    if (ref($plugin) eq 'HASH') {
+        $config = $plugin->{config} || {};
+        $plugin = $plugin->{module};
+    }
+    return unless $plugin;
+
     my $pkg;
     if (($pkg = $plugin) =~ s/^\+// || ($pkg = $c->class_component_load_plugin_resolver($plugin))) {
         $pkg->require or croak $@;
@@ -170,11 +188,13 @@ sub _load_plugin {
     }
 
     my $class_component_plugins = $c->class_component_plugins;
-    for my $default (@{ $class_component_plugins }) {
-        return if $pkg eq ref($default);
+    unless ($config) {
+        for my $default (@{ $class_component_plugins }) {
+            return if $pkg eq ref($default);
+        }
     }
 
-    my $obj = $pkg->new($c->class_component_config->{$plugin} || {});
+    my $obj = $pkg->new($config || $c->class_component_config->{$plugin} || {}, $c);
     push @{ $class_component_plugins }, $obj;
     $obj->register($c);
 }
@@ -576,6 +596,18 @@ It is not possible to use it at the same time as DisableDynamicPlugin.
   $obj->test; # plugin load ok
   my $obj2 = MyClass->new;
   $obj2->test; # died
+
+=back
+
+=head1 COMPONENTS
+
+=over 4
+
+=item Plaggerize
+
+The Plaggerize is extend your module like from L<Plagger> component.
+
+see. L<Class::Component::Component::Plaggerize>
 
 =back
 
