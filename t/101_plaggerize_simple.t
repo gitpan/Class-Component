@@ -4,7 +4,14 @@ use strict;
 use warnings;
 use lib 't';
 
-use Test::More tests => 4;
+use Test::More;
+
+eval " use YAML ";
+plan skip_all => "YAML is not installed." if $@;
+eval " use Encode ";
+plan skip_all => "Encode is not installed." if $@;
+
+plan tests => 4;
 
 use MyPlaggerize;
 

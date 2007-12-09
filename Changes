@@ -1,5 +1,9 @@
 Revision history for Perl extension Class::Component
 
+0.08    2007-12-09T14:23:01+09:00
+        - fixed to do not work test 101_plaggerize_simple.t by Perl 5.6
+        - fixed to Carp is not loaded in Plaggerize
+
 0.07    2007-12-06T17:03:46+09:00
         - add Class::Component::Component::Plaggerize
         - add class_component_clear_isa_list method

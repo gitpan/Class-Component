@@ -1,6 +1,7 @@
 package Class::Component::Component::Plaggerize;
 use strict;
 use warnings;
+use Carp ();
 use UNIVERSAL::require;
 
 sub import {
