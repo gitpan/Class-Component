@@ -1,5 +1,8 @@
 Revision history for Perl extension Class::Component
 
+0.09    2007-12-18T21:07:56+09:00
+        - do not 101_plaggerize_simple.t test if YAML is not installed.
+
 0.08    2007-12-09T14:23:01+09:00
         - fixed to do not work test 101_plaggerize_simple.t by Perl 5.6
         - fixed to Carp is not loaded in Plaggerize

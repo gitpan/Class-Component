@@ -13,7 +13,7 @@ plan skip_all => "Encode is not installed." if $@;
 
 plan tests => 4;
 
-use MyPlaggerize;
+eval "use MyPlaggerize ";
 
 my $pla = MyPlaggerize->new({ config => {
     global => {

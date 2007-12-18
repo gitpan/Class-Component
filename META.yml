@@ -20,4 +20,4 @@ requires:
   Class::Data::Inheritable: 0
   Class::Inspector: 0
   UNIVERSAL::require: 0
-version: 0.08
+version: 0.09
