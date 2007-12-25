@@ -1,5 +1,8 @@
 Revision history for Perl extension Class::Component
 
+0.10    2007-12-25T11:41:32+09:00
+        - removed to duplicate config hash keys
+
 0.09    2007-12-18T21:07:56+09:00
         - do not 101_plaggerize_simple.t test if YAML is not installed.
 

@@ -31,8 +31,7 @@ sub log {
     $self->NEXT( log => @_ );
 
     my $conf      = $self->conf->{global}->{log};
-
-    return unless ( $levels{$level} || 0 ) >= ( $levels{$conf->{global}->{log}->{level}} || 0 );
+    return unless ( $levels{$level} || 0 ) >= ( $levels{$conf->{level}} || 0 );
 
     # hack to get the original caller as Plugin
     my $caller = $opt{caller};
@@ -49,9 +48,9 @@ sub log {
     my $ansicolor = defined($conf->{ansicolor}) ? $conf->{ansicolor} : 'red';
 
     chomp($msg);
-    if ( $conf->{global}->{log}->{encoding} ) {
+    if ( $conf->{encoding} ) {
         $msg = Encode::decode_utf8($msg) unless utf8::is_utf8($msg);
-        $msg = Encode::encode( $conf->{global}->{log}->{encoding}, $msg );
+        $msg = Encode::encode( $conf->{encoding}, $msg );
     }
 
     local $| = 1;

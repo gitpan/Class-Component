@@ -2,7 +2,7 @@ package Class::Component;
 
 use strict;
 use warnings;
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 for my $method (qw/ load_components load_plugins new register_method register_hook remove_method remove_hook call run_hook NEXT /) {
     no strict 'refs';
