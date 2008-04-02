@@ -1,5 +1,9 @@
 Revision history for Perl extension Class::Component
 
+0.11    2008-04-02T18:12:55+09:00
+        - changed to extend attribute option like Attribute::Handlers
+        - updated to POD
+
 0.10    2007-12-25T11:41:32+09:00
         - removed to duplicate config hash keys
 

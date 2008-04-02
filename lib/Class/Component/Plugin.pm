@@ -22,6 +22,21 @@ sub new {
 
 sub init {}
 
+sub class_component_plugin_attribute_detect {
+    my($self, $attr) = @_;
+    return unless my($key, $value) = ($attr =~ /^(.*?)(?:\(\s*(.+?)\s*\))?$/);
+    return ($key, $value) unless defined $value;
+
+    my $pkg    = ref $self;
+    # from Attribute::Handlers
+    my $evaled = eval "package $pkg; no warnings; local \$SIG{__WARN__} = sub{ die \@_ }; [$value]"; ## no critic
+    $@ and croak "$pkg: $value: $@";
+    my $data   = $evaled || [$value];
+    $value     = (@{ $data } > 1) ? $data : $data->[0];
+
+    return ($key, $value);
+}
+
 sub register {
     my($self, $c) = @_;
 
@@ -36,11 +51,7 @@ sub register {
     }
     for my $data (@{ $self->__methods_cache }) {
         for my $attr (@{ $data->{attrs} }) {
-            next unless my($key, $value) = ($attr =~ /^(.*?)(?:\(\s*(.+?)\s*\))?$/);
-            if (defined $value) {
-                ($value =~ s/^'(.*)'$/$1/) || ($value =~ s/^"(.*)"$/$1/);
-            }
-
+            next unless my($key, $value) = $self->class_component_plugin_attribute_detect($attr);
 
             for my $isa_pkg (@{ Class::Component::Implement->isa_list_cache($c) }) {
                 my $attr_class = "$isa_pkg\::Attribute::$key";
@@ -67,10 +78,34 @@ Class::Component::Plugin - plugin base for pluggable component framework
 
 =head1 SYNOPSIS
 
-    package MyClass::Plugin::Hello;
+Your plugins should succeed to Class::Component::Plugin by your name space, and use it. 
+
+    package MyClass::Plugin;
     use strict;
     use warnings;
     use base 'Class::Component::Plugin';
+    1;
+
+for instance, the init phase is rewritten. 
+
+    package MyClass::Plugin;
+    use strict;
+    use warnings;
+    use base 'Class::Component::Plugin';
+    __PACKAGE__->mk_accessors(qw/ base_config /);
+
+    sub init {
+        my($self, $c) = @_;
+        $self->base_config($self->config);
+        $self->config($self->config->{config});
+    }
+    1;
+
+
+    package MyClass::Plugin::Hello;
+    use strict;
+    use warnings;
+    use base 'MyClass::Plugin';
     sub hello :Method {
         my($self, $context, $args) = @_;
         'hello'
@@ -79,6 +114,18 @@ Class::Component::Plugin - plugin base for pluggable component framework
         my($self, $context, $args) = @_;
         'hook hello'
     }
+
+=head1 HOOK POINTS
+
+=over 4
+
+=item init
+
+init phase your plugins
+
+=item class_component_plugin_attribute_detect
+
+=back
 
 =head1 ATTRIBUTES
 

@@ -2,7 +2,7 @@ package Class::Component;
 
 use strict;
 use warnings;
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 for my $method (qw/ load_components load_plugins new register_method register_hook remove_method remove_hook call run_hook NEXT /) {
     no strict 'refs';
@@ -536,8 +536,8 @@ Plugin/Component of the object made with YAML::Load etc. is done and require is 
 
 =head1 ATTRIBUTES
 
-SEE ALSO Class::Component::Attribute::Method, Class::Component::Attribute::Hook 
-and MyClass::Attribute::Test in ./t directory.
+SEE ALSO Class::Component::Attribute::Method and Class::Component::Attribute::Hook 
+test code in ./t directory. (MyClass::Attribute::Test and MyClass::Plugin::ExtAttribute)
 
 =head1 APPENDED COMPONENTS
 
@@ -621,7 +621,7 @@ L<Class::Component::Plugin>
 
 =head1 EXAMPLE
 
-L<Number::Object>
+L<Number::Object>, L<App::MadEye>
 
 =head1 LICENSE
 
