@@ -4,10 +4,9 @@ use strict;
 use warnings;
 
 use Carp::Clan qw/Class::Component/;
-use Class::Inspector;
-use Scalar::Util ();
 
-
+my $instance_counter = 0;
+my $alloc_map = {};
 sub register_method {
     my($self, @methods) = @_;
 
@@ -21,12 +20,20 @@ sub register_method {
 
     my $singleton_class;
     my $pkg = ref($self);
-    my $ref_addr = Scalar::Util::refaddr($self);
     unless ($pkg =~ /::_Singletons::\d+$/) {
-        $singleton_class = "$pkg\::_Singletons::$ref_addr";
-        ## no critic
-        eval "{package $singleton_class;use base '$pkg';1;}";
-        ## use critic
+        $singleton_class = "$pkg\::_Singletons::";
+        my $count;
+        for my $c (0..$instance_counter) {
+            no strict 'refs';
+            next if $alloc_map->{"$singleton_class$c"};
+            $count = $c;
+            last;
+        }
+        $count = ++$instance_counter unless defined $count;
+        $singleton_class .= $count;
+	$alloc_map->{$singleton_class} = 1;
+        
+        { no strict 'refs'; @{"$singleton_class\::ISA"} = $pkg; }
         bless $self, $singleton_class if ref($self);
         Class::Component::Implement->component_isa_list->{$singleton_class} = Class::Component::Implement->component_isa_list->{$pkg};
     } else {
@@ -47,4 +54,12 @@ sub remove_method {
         delete ${ref($self) . "::"}{$method};
     }
 }
+
+sub DESTROY {
+    my $self = shift;
+    $self->remove_method(%{ $self->class_component_methods });
+    $self->class_component_clear_isa_list;
+    delete $alloc_map->{ref $self};
+}
+
 1;

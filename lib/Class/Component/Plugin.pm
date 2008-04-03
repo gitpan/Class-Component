@@ -22,10 +22,17 @@ sub new {
 
 sub init {}
 
+my %attribute_detect_cache = ();
+sub is_class_component_plugin_attribute_detect_cache { 1 };
 sub class_component_plugin_attribute_detect {
-    my($self, $attr) = @_;
+    my($self, $attr, $cache_key) = @_;
+    $attribute_detect_cache{$cache_key} = [];
+
     return unless my($key, $value) = ($attr =~ /^(.*?)(?:\(\s*(.+?)\s*\))?$/);
-    return ($key, $value) unless defined $value;
+    unless (defined $value) {
+        $attribute_detect_cache{$cache_key} = [$key, $value];
+        return ($key, $value);
+    }
 
     my $pkg    = ref $self;
     # from Attribute::Handlers
@@ -34,6 +41,7 @@ sub class_component_plugin_attribute_detect {
     my $data   = $evaled || [$value];
     $value     = (@{ $data } > 1) ? $data : $data->[0];
 
+    $attribute_detect_cache{$cache_key} = [$key, $value];
     return ($key, $value);
 }
 
@@ -49,16 +57,26 @@ sub register {
         }
         $self->__methods_cache( \@methods );
     }
+
+    my $is_attribute_detect_cache = $self->is_class_component_plugin_attribute_detect_cache;
+    my $class = ref $self;
     for my $data (@{ $self->__methods_cache }) {
         for my $attr (@{ $data->{attrs} }) {
-            next unless my($key, $value) = $self->class_component_plugin_attribute_detect($attr);
-
-            for my $isa_pkg (@{ Class::Component::Implement->isa_list_cache($c) }) {
-                my $attr_class = "$isa_pkg\::Attribute::$key";
-                next unless Class::Inspector->installed($attr_class);
-                $attr_class->require or croak "'$key' is not supported attribute";
-                $attr_class->register($self, $c, $data->{method}, $value, $data->{code});
+            my($key, $value);
+            my $cache_key = "$class\::$attr";
+            my $attr_res  = $attribute_detect_cache{$cache_key};
+            if ($is_attribute_detect_cache && $attr_res) {
+                ($key, $value) = ( $attr_res->[0], $attr_res->[1] );
+            } else {
+                next unless ($key, $value) = $self->class_component_plugin_attribute_detect($attr, $cache_key);
             }
+
+            my $attr_class = Class::Component::Implement->pkg_require($c => "Attribute::$key");
+            unless ($attr_class) {
+                next unless $@;
+                croak "'$key' is not supported attribute";
+            }
+            $attr_class->register($self, $c, $data->{method}, $value, $data->{code});
         }
     }
 }
@@ -124,6 +142,11 @@ for instance, the init phase is rewritten.
 init phase your plugins
 
 =item class_component_plugin_attribute_detect
+
+=item is_class_component_plugin_attribute_detect_cache
+
+1 = using attribute detect cache
+0 = not use cache
 
 =back
 

@@ -18,6 +18,7 @@ for my $name (qw/ components plugins /) {
     *{__PACKAGE__."::$method"} = sub {
         my $class = shift;
         $class = ref($class) || $class;
+        $component_params{$name}->{$class} = $_[0] if $_[0];
         $component_params{$name}->{$class} = [] unless $component_params{$name}->{$class};
         $component_params{$name}->{$class};
     }
@@ -29,6 +30,7 @@ for my $name (qw/ methods hooks /) {
     *{__PACKAGE__."::$method"} = sub {
         my $class = shift;
         $class = ref($class) || $class;
+        $component_params{$name}->{$class} = $_[0] if $_[0];
         $component_params{$name}->{$class} = {} unless $component_params{$name}->{$class};
         $component_params{$name}->{$class};
     }

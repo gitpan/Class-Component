@@ -2,7 +2,7 @@ package Class::Component;
 
 use strict;
 use warnings;
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 for my $method (qw/ load_components load_plugins new register_method register_hook remove_method remove_hook call run_hook NEXT /) {
     no strict 'refs';
@@ -12,7 +12,10 @@ for my $method (qw/ load_components load_plugins new register_method register_ho
 for my $name (qw/ config components plugins methods hooks /) {
     my $method = "class_component_$name";
     no strict 'refs';
-    *{__PACKAGE__."::$method"} = sub { shift->{"_$method"} };
+    *{__PACKAGE__."::$method"} = sub { 
+        $_[0]->{"_$method"} = $_[1] if $_[1];
+        $_[0]->{"_$method"}
+    };
 }
 
 sub import {
@@ -43,6 +46,11 @@ sub class_component_clear_isa_list {
     my $isa_list = Class::Component::Implement->component_isa_list;
     for my $key (keys %{ $isa_list }) {
         delete $isa_list->{$key} if $key =~ /^$klass-/ || $key eq $klass;
+    }
+
+    my $pkg_require_cache = Class::Component::Implement->pkg_require_cache;
+    for my $key (keys %{ $pkg_require_cache }) {
+        delete $pkg_require_cache->{$key} if $key =~ /^$klass\::/ || $key eq $klass;
     }
 }
 
@@ -103,20 +111,12 @@ sub _load_component {
 
     my $pkg;
     if (($pkg = $component) =~ s/^\+// || ($pkg = $c->class_component_load_component_resolver($component))) {
-        if (Class::Inspector->installed($pkg)) {
-            $pkg->require or croak $@;
-        } else {
-            croak "$pkg is not installed";
-        }
+        $pkg->require or croak $@;
     } else {
-        for my $isa_pkg (@{ $class->isa_list_cache($c) }) {
-            my $comp = "$isa_pkg\::Component::$component";
-            next unless Class::Inspector->installed($comp);
-            $comp->require or croak $@;
-            $pkg = $comp;
-            last;
+        unless ($pkg = $class->pkg_require($c => "Component::$component")) {
+            $@ and croak $@;
+            croak "$component is not installed";
         }
-        croak "$component is not installed" unless $pkg;
     }
 
     unless ($reload) {
@@ -177,14 +177,10 @@ sub _load_plugin {
     if (($pkg = $plugin) =~ s/^\+// || ($pkg = $c->class_component_load_plugin_resolver($plugin))) {
         $pkg->require or croak $@;
     } else {
-        for my $isa_pkg (@{ $class->isa_list_cache($class->_class($c)) }) {
-            my $comp = "$isa_pkg\::Plugin::$plugin";
-            next unless Class::Inspector->installed($comp);
-            $comp->require or croak $@;
-            $pkg = $comp;
-            last;
+        unless ($pkg = $class->pkg_require($c => "Plugin::$plugin")) {
+            $@ and croak $@;
+            croak "$plugin is not installed";
         }
-        croak "$plugin is not installed" unless $pkg;
     }
 
     my $class_component_plugins = $c->class_component_plugins;
@@ -300,23 +296,28 @@ sub reload_plugin {
 
 sub NEXT {
     my($class, $c, $method, @args) = @_;
-    my @isa = @{ $class->isa_list_cache($c, caller(1)) };
+    my $klass  = ref $c || $c;
+    my $caller = caller(1);
+
+    my $isa_list_cache = $component_isa_list->{"$klass-$caller"} || $class->isa_list_cache($c, $caller);
+    my @isa = @{ $isa_list_cache };
 
     for my $pkg (@isa) {
+        next unless $pkg->can($method);;
         my $next = "$pkg\::$method";
-        return $c->$next(@args) if $pkg->can($method);
+        return $c->$next(@args);
     }
 
     for my $pkg (@isa) {
+        next unless $pkg->can('AUTOLOAD');
         my $next = "$pkg\::$method";
-        return $c->$next(@args) if $pkg->can('AUTOLOAD');
+        return $c->$next(@args);
     }
 }
 
 sub isa_list_cache {
     my($class, $c, $from) = @_;
-    $c = $class->_class($c);
-    my $key = $c;
+    my $key = ref $c || $c;
     $key .= "-$from" if $from;
     $component_isa_list->{$key} = $class->isa_list($c, $from) unless $component_isa_list->{$key};
     $component_isa_list->{$key};
@@ -324,7 +325,7 @@ sub isa_list_cache {
 
 sub isa_list {
     my($class, $c, $from) = @_;
-    $c = $class->_class($c);
+    $c = ref $c || $c;
 
     my $isa_list = $class->_fetch_isa_list($c);
     my $isa_mark = {};
@@ -387,6 +388,39 @@ sub _sort_isa_list {
 sub _class {
     my($class, $c) = @_;
     ref($c) || $c;
+}
+
+my $pkg_require_cache = {};
+sub pkg_require_cache { $pkg_require_cache }
+sub pkg_require_cache_clear { $pkg_require_cache = {} }
+sub pkg_require {
+    my($class, $c, $pkg) = @_;
+    $c = ref $c || $c;
+
+    my $isa_list;
+    if ($isa_list = $component_isa_list->{$c}) {
+        if (my $cache = $pkg_require_cache->{$pkg}) {
+            if ($cache->{isa_list} eq join('-', @{ $isa_list })) {
+                return $cache->{pkg};
+            }
+        }
+    }
+    $isa_list ||= [];
+
+    my $obj = { isa_list => join('-', @{ $isa_list }) };
+    $pkg_require_cache->{$pkg} = $obj;
+    for my $isa_pkg (@{ $class->isa_list_cache($c) }) {
+        unless ($isa_list) {
+            $isa_list = $component_isa_list->{$c};
+            $obj->{isa_list} = join('-', @{ $isa_list });
+        }
+
+        my $new_pkg  = "$isa_pkg\::$pkg";
+        next unless Class::Inspector->installed($new_pkg);
+        $new_pkg->require or return;
+        $obj->{pkg} = $new_pkg;
+        return $new_pkg;
+    }
 }
 
 package Class::Component;

@@ -1,5 +1,10 @@
 Revision history for Perl extension Class::Component
 
+0.12    2008-04-03T16:53:37+09:00
+        - speed optimized
+        - Component::Autocall::SingletonMethod memory leak fixed
+        - class_component_(?:config|components|plugins|methods|hooks) methods enchant setter
+
 0.11    2008-04-02T18:12:55+09:00
         - changed to extend attribute option like Attribute::Handlers
         - updated to POD
