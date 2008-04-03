@@ -23,7 +23,7 @@ sub new {
 sub init {}
 
 my %attribute_detect_cache = ();
-sub is_class_component_plugin_attribute_detect_cache { 1 };
+sub class_component_plugin_attribute_detect_cache_enable { 1 };
 sub class_component_plugin_attribute_detect {
     my($self, $attr, $cache_key) = @_;
     $attribute_detect_cache{$cache_key} = [];
@@ -58,7 +58,7 @@ sub register {
         $self->__methods_cache( \@methods );
     }
 
-    my $is_attribute_detect_cache = $self->is_class_component_plugin_attribute_detect_cache;
+    my $is_attribute_detect_cache = $self->class_component_plugin_attribute_detect_cache_enable;
     my $class = ref $self;
     for my $data (@{ $self->__methods_cache }) {
         for my $attr (@{ $data->{attrs} }) {
@@ -143,7 +143,7 @@ init phase your plugins
 
 =item class_component_plugin_attribute_detect
 
-=item is_class_component_plugin_attribute_detect_cache
+=item class_component_plugin_attribute_detect_cache_enable
 
 1 = using attribute detect cache
 0 = not use cache
