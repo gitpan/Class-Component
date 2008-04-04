@@ -45,6 +45,8 @@ sub class_component_plugin_attribute_detect {
     return ($key, $value);
 }
 
+sub class_component_load_attribute_resolver { }
+
 sub register {
     my($self, $c) = @_;
 
@@ -71,7 +73,13 @@ sub register {
                 next unless ($key, $value) = $self->class_component_plugin_attribute_detect($attr, $cache_key);
             }
 
-            my $attr_class = Class::Component::Implement->pkg_require($c => "Attribute::$key");
+            my $attr_class;
+            if (my $pkg = $self->class_component_load_attribute_resolver($key)) {
+                $pkg->require or croak $@;
+                $attr_class = $pkg;
+            } else {
+                $attr_class = Class::Component::Implement->pkg_require($c => "Attribute::$key");
+            }
             unless ($attr_class) {
                 next unless $@;
                 croak "'$key' is not supported attribute";
@@ -147,6 +155,10 @@ init phase your plugins
 
 1 = using attribute detect cache
 0 = not use cache
+
+=item class_component_load_attribute_resolver
+
+attribute name space detector
 
 =back
 

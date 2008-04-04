@@ -45,7 +45,11 @@ t/10_myclass_injectmethod.t
 t/11_myclass_disabledynamicplugin_injectmethod.t
 t/12_attribute.t
 t/13_extattribute.t
+t/14_anonpluginmethod.t
+t/15_aliaspluginmethod.t
 t/MyClass.pm
+t/MyClass/Attribute/Alias.pm
+t/MyClass/Attribute/Anon.pm
 t/MyClass/Attribute/Dump.pm
 t/MyClass/Attribute/DumpRun.pm
 t/MyClass/Attribute/Test.pm
@@ -56,6 +60,8 @@ t/MyClass/Component/B.pm
 t/MyClass/Component/E.pm
 t/MyClass/D.pm
 t/MyClass/F.pm
+t/MyClass/Plugin/AliasMethod.pm
+t/MyClass/Plugin/AnonMethod.pm
 t/MyClass/Plugin/Attribute.pm
 t/MyClass/Plugin/Default.pm
 t/MyClass/Plugin/ExtAttribute.pm

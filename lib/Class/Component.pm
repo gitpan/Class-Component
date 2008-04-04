@@ -2,7 +2,7 @@ package Class::Component;
 
 use strict;
 use warnings;
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 for my $method (qw/ load_components load_plugins new register_method register_hook remove_method remove_hook call run_hook NEXT /) {
     no strict 'refs';
@@ -253,8 +253,22 @@ sub remove_hook {
 sub call {
     my($class, $c, $method, @args) = @_;
     return unless my $plugin = $c->class_component_methods->{$method};
-    $class->reload_plugin($c, $plugin);
-    $plugin->$method($c, @args);
+    if (ref $plugin eq 'HASH') {
+        # extend method
+        my $obj         = $plugin;
+        $plugin         = $obj->{plugin};
+        my $real_method = $obj->{method};
+        return unless $plugin && $real_method;
+        $class->reload_plugin($c, $plugin);
+        if (ref $real_method eq 'CODE') {
+            $real_method->($plugin, $c, @args);
+        } elsif (!ref($real_method)) {
+            $plugin->$real_method($c, @args);
+        }
+    } else {
+        $class->reload_plugin($c, $plugin);
+        $plugin->$method($c, @args);
+    }
 }
 
 sub run_hook {
@@ -655,7 +669,7 @@ L<Class::Component::Plugin>
 
 =head1 EXAMPLE
 
-L<Number::Object>, L<App::MadEye>
+L<HTTP::MobileAttribute>, L<Number::Object>, L<App::MadEye>
 
 =head1 LICENSE
 

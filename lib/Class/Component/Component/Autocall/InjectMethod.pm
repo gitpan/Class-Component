@@ -11,10 +11,24 @@ sub register_method {
 
     $self->NEXT( register_method => @methods );                                                                                                                
     while (my($method, $plugin) = splice @methods, 0, 2) {
+        next unless $plugin;
         no strict 'refs';
         no warnings 'redefine';
-        *{"$class\::$method"} = sub { $plugin->$method(shift, @_) };
-#        $self->class_component_methods->{$method} = $plugin
+        unless (ref $plugin eq 'HASH') {
+            *{"$class\::$method"} = sub { $plugin->$method(shift, @_) };
+            next;
+        }
+
+        # extend method
+        my $obj         = $plugin;
+        $plugin         = $obj->{plugin};
+        my $real_method = $obj->{method};
+        next unless $plugin && $real_method;
+        if (ref $real_method eq 'CODE') {
+            *{"$class\::$method"} = sub { $real_method->($plugin, shift, @_) };
+        } elsif (!ref($real_method)) {
+            *{"$class\::$method"} = sub { $plugin->$real_method(shift, @_) };
+        }
     }
 }
 

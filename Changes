@@ -1,5 +1,9 @@
 Revision history for Perl extension Class::Component
 
+0.14    2008-04-04T15:47:55+09:00
+        - add attribute name space resolver (class_component_load_attribute_resolver) tokuhirom++
+        - add support anonymous method and code reference to register_method
+
 0.13    2008-04-03T17:43:39+09:00
         - change method name is_class_component_plugin_attribute_detect_cache to class_component_plugin_attribute_detect_cache_enable
           this method is added in version 0.12
