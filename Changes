@@ -1,5 +1,9 @@
 Revision history for Perl extension Class::Component
 
+0.15    2008-04-09T16:31:49+09:00
+        - add Component::AutoloadPlugin by tokuhirom++
+        - add 17_duplication_load_plugins.t test
+
 0.14    2008-04-04T15:47:55+09:00
         - add attribute name space resolver (class_component_load_attribute_resolver) tokuhirom++
         - add support anonymous method and code reference to register_method

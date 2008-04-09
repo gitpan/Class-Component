@@ -2,7 +2,7 @@ package Class::Component;
 
 use strict;
 use warnings;
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 for my $method (qw/ load_components load_plugins new register_method register_hook remove_method remove_hook call run_hook NEXT /) {
     no strict 'refs';
@@ -645,6 +645,20 @@ It is not possible to use it at the same time as DisableDynamicPlugin.
   my $obj2 = MyClass->new;
   $obj2->test; # died
 
+=item AutoloadPlugin
+
+AutoloadPlugin is Plagger->autoload_plugin like
+
+  $c->autoload_plugins({ module => 'Hello' });
+  $c->autoload_plugins({ module => 'Hello', config => {} });
+  $c->autoload_plugins({ module => '+Foo::Plugin::Hello' });
+  $c->autoload_plugins({ module => '+Foo::Plugin::Hello', config => {} });
+
+the under case is same to load_pugins method
+
+  $c->autoload_plugins('Hello');
+  $c->autoload_plugins('+Foo::Plugin::Hello');
+
 =back
 
 =head1 COMPONENTS
@@ -662,6 +676,10 @@ see. L<Class::Component::Component::Plaggerize>
 =head1 AUTHOR
 
 Kazuhiro Osawa E<lt>ko@yappo.ne.jpE<gt>
+
+=head1 THANKS TO
+
+Tokuhiro Matsuno
 
 =head1 SEE ALSO
 
