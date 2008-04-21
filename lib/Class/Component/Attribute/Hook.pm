@@ -7,7 +7,7 @@ use base 'Class::Component::Attribute';
 sub register {
     my($class, $plugin, $c, $method, $value) = @_;
 
-    return unless $value;
+    $value ||= $method;
     $c->register_hook( $value => { plugin => $plugin, method => $method } );
 }
 

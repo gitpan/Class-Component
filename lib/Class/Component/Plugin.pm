@@ -141,6 +141,19 @@ for instance, the init phase is rewritten.
         'hook hello'
     }
 
+can use alias method name
+
+    sub foo :Method('bar') {}
+
+    $self->call('bar'); # call foo method
+
+default hook name is method name if undefined Hook Arg
+
+    sub defaulthook :Hook {}
+
+    $self->run_hook( 'defaulthook' );
+
+
 =head1 HOOK POINTS
 
 =over 4

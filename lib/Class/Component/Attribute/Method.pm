@@ -7,7 +7,11 @@ use base 'Class::Component::Attribute';
 sub register {
     my($class, $plugin, $c, $method, $value) = @_;
 
-    $c->register_method( $method => $plugin );
+    if ($value) {
+        $c->register_method( $value => { plugin => $plugin, method => $method } );
+    } else {
+        $c->register_method( $method => $plugin );
+    }
 }
 
 1;

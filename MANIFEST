@@ -50,6 +50,7 @@ t/14_anonpluginmethod.t
 t/15_aliaspluginmethod.t
 t/16_myclass_autoload_plugin.t
 t/17_duplication_load_plugins.t
+t/18_myclass_default_hook.t
 t/MyClass.pm
 t/MyClass/Attribute/Alias.pm
 t/MyClass/Attribute/Anon.pm
@@ -64,9 +65,11 @@ t/MyClass/Component/E.pm
 t/MyClass/D.pm
 t/MyClass/F.pm
 t/MyClass/Plugin/AliasMethod.pm
+t/MyClass/Plugin/AliasMethod2.pm
 t/MyClass/Plugin/AnonMethod.pm
 t/MyClass/Plugin/Attribute.pm
 t/MyClass/Plugin/Default.pm
+t/MyClass/Plugin/DefaultHook.pm
 t/MyClass/Plugin/ExtAttribute.pm
 t/MyClass/Plugin/Hello.pm
 t/MyPlaggerize.pm
