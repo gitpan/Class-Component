@@ -2,6 +2,13 @@ use inc::Module::Install;
 name 'Class-Component';
 all_from 'lib/Class/Component.pm';
 
+{
+    no warnings 'redefine';
+    *recommends_hack = $Module::Install::VERSION > 0.70 ?
+        sub { recommends(@_); $_[0] } :
+        \&recommends;
+}
+
 requires $_ for (qw/
     Carp::Clan
     Class::Accessor::Fast
@@ -13,16 +20,17 @@ requires $_ for (qw/
 features(
     'Plaggerize' => [
         -default => 0,
-        recommends('Encode'),
-        recommends('YAML'),
+        recommends_hack('Encode'),
+        recommends_hack('YAML'),
     ],
     'ANSI Color Logging for Plaggerize' => [
         -default => 0,
-        recommends('Term::ANSIColor'),
+        recommends_hack('Term::ANSIColor'),
     ],
 );
 
 build_requires 'Test::More';
 #use_test_base;
 auto_include;
+auto_install;
 WriteAll;

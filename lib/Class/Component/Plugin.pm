@@ -147,7 +147,7 @@ can use alias method name
 
     $self->call('bar'); # call foo method
 
-default hook name is method name if undefined Hook Arg
+default hook name is method name if undefined Hook name
 
     sub defaulthook :Hook {}
 

@@ -1,5 +1,7 @@
 Changes
+inc/Module/AutoInstall.pm
 inc/Module/Install.pm
+inc/Module/Install/AutoInstall.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
 inc/Module/Install/Fetch.pm
@@ -19,6 +21,7 @@ lib/Class/Component/Component/Autocall/InjectMethod.pm
 lib/Class/Component/Component/Autocall/SingletonMethod.pm
 lib/Class/Component/Component/AutoloadPlugin.pm
 lib/Class/Component/Component/DisableDynamicPlugin.pm
+lib/Class/Component/Component/Moosenize.pm
 lib/Class/Component/Component/Plaggerize.pm
 lib/Class/Component/Component/Plaggerize/ConfigLoader.pm
 lib/Class/Component/Component/Plaggerize/Log.pm

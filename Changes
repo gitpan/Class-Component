@@ -1,5 +1,8 @@
 Revision history for Perl extension Class::Component
 
+0.17    2008-05-12T17:57:22+09:00
+        - add Component::Moosenize
+
 0.16    2008-04-21T22:05:30+09:00
         - Attribute::Method can use alias method name
         - Attribute::Hook default hook name is method name if undefined Hook Arg 

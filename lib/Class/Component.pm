@@ -2,7 +2,7 @@ package Class::Component;
 
 use strict;
 use warnings;
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 for my $method (qw/ load_components load_plugins new register_method register_hook remove_method remove_hook call run_hook NEXT /) {
     no strict 'refs';
@@ -442,6 +442,8 @@ package Class::Component;
 1;
 __END__
 
+=for stopwords Foo
+
 =head1 NAME
 
 Class::Component - pluggable component framework
@@ -563,6 +565,9 @@ It is behavior near maybe::next::method of Class::C3.
 =item class_component_load_component_resolver
 
 =item class_component_load_plugin_resolver
+
+Given an (possibly) unqualified plugin name (say, "Foo"), resolves it into
+a fully qualified module name (say, "MyApp::Plugin::Foo")
 
 =back
 
